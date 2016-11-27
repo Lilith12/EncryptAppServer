@@ -65,6 +65,18 @@ io.on('connection', function (socket) {
     var roomUsers = rooms[roomName];
     if(roomUsers.indexOf(socket.id) == -1)
       rooms[roomName].push(socket.id);
+      roomUsers.forEach(function(entry) {
+          io.to(entry).emit('user connected', {username: socket.username});
+      });
+  });
+
+  socket.on('disconnect from room', function(roomName){
+      var index = rooms[roomName].indexOf(socket.id);
+      rooms[roomName].splice(index, 1);
+      var roomUsers = rooms[roomName];
+      roomUsers.forEach(function(entry) {
+          io.to(entry).emit('user disconnected', {username: socket.username});
+      });
   });
 
   socket.on('get users', function (){
