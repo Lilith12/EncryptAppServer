@@ -100,18 +100,20 @@ io.on('connection', function (socket) {
             if(entry!=clients[socket.username])
                 io.to(entry).emit('groupMessage', {username: socket.username, message: data});
         });
-    });  socket.on('typing to group', function (roomName) {
+    });
+    socket.on('typing to group', function (roomName) {
         var roomUsers = rooms[roomName];
         roomUsers.forEach(function(entry) {
             if (entry != clients[socket.username])
-                io.to(users).emit('groupTyping', {username: socket.username});
+                io.to(entry).emit('groupTyping', {username: socket.username});
         });
     });
+
     socket.on('stop typing to group', function (roomName) {
         var roomUsers = rooms[roomName];
         roomUsers.forEach(function(entry) {
             if (entry != clients[socket.username])
-                io.to(users).emit('stopGroupTyping', {username: socket.username});
+                io.to(entry).emit('stopGroupTyping', {username: socket.username});
         });
     });
 
