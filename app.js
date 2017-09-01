@@ -50,6 +50,15 @@ io.on('connection', function (socket) {
     }
   });
 
+ socket.on('disconnect user', function (username) {
+     console.log("user disconnected " + username);
+     var userSocket = clients[username];
+     delete clients[username];
+     delete usersSocket[userSocket];
+     var index = clientsUsernames.indexOf(username);
+     clientsUsernames.splice(index, 1);
+ });
+
   socket.on('get rooms', function (){
     socket.emit('roomsArray', {"rooms": roomsNames});
   });
@@ -91,14 +100,19 @@ io.on('connection', function (socket) {
   });
 
   socket.on('new message', function (toClient, data) {
-    io.to(clients[toClient]).emit('pwMessage', {username: socket.username, message: data});
+    var dataToEmit = {username: socket.username, message: data};
+    io.to(clients[toClient]).emit('pwMessage', dataToEmit);
+    // io.to(clients[toClient]).emit('pwMessageGlobal', dataToEmit);
   });
 
     socket.on('new group message', function (roomName, data) {
         var roomUsers = rooms[roomName];
         roomUsers.forEach(function(entry) {
-            if(entry!=clients[socket.username])
-                io.to(entry).emit('groupMessage', {username: socket.username, message: data});
+            if(entry!=clients[socket.username]){
+                var dataToEmit = {roomName: roomName, username: socket.username, message: data};
+                io.to(entry).emit('groupMessage', dataToEmit);
+                // io.to(entry).emit('groupMessageGlobal', dataToEmit);
+            }
         });
     });
     socket.on('typing to group', function (roomName) {
