@@ -102,7 +102,7 @@ io.on('connection', function (socket) {
   socket.on('new message', function (toClient, data) {
     var dataToEmit = {username: socket.username, message: data};
     io.to(clients[toClient]).emit('pwMessage', dataToEmit);
-    // io.to(clients[toClient]).emit('pwMessageGlobal', dataToEmit);
+    io.to(clients[toClient]).emit('pwMessageGlobal', dataToEmit);
   });
 
     socket.on('new group message', function (roomName, data) {
@@ -111,7 +111,7 @@ io.on('connection', function (socket) {
             if(entry!=clients[socket.username]){
                 var dataToEmit = {roomName: roomName, username: socket.username, message: data};
                 io.to(entry).emit('groupMessage', dataToEmit);
-                // io.to(entry).emit('groupMessageGlobal', dataToEmit);
+                io.to(entry).emit('groupMessageGlobal', dataToEmit);
             }
         });
     });
