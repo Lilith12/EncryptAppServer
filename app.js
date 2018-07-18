@@ -99,37 +99,38 @@ io.on('connection', function (socket) {
     io.to(clients[toClient]).emit('stop typing', {username: socket.username});
   });
 
-  socket.on('new message', function (toClient, data) {
-    var dataToEmit = {username: socket.username, message: data};
+  socket.on('new message', function (toClient, data, wasEdited, position, messageCode) {
+    var dataToEmit = {username: socket.username, message: data, wasEdited: wasEdited, position: position, messageCode: messageCode};
     io.to(clients[toClient]).emit('pwMessage', dataToEmit);
     io.to(clients[toClient]).emit('pwMessageGlobal', dataToEmit);
   });
 
-    socket.on('new group message', function (roomName, data) {
-        var roomUsers = rooms[roomName];
-        roomUsers.forEach(function(entry) {
-            if(entry!=clients[socket.username]){
-                var dataToEmit = {roomName: roomName, username: socket.username, message: data};
-                io.to(entry).emit('groupMessage', dataToEmit);
-                io.to(entry).emit('groupMessageGlobal', dataToEmit);
-            }
-        });
-    });
-    socket.on('typing to group', function (roomName) {
-        var roomUsers = rooms[roomName];
-        roomUsers.forEach(function(entry) {
-            if (entry != clients[socket.username])
-                io.to(entry).emit('groupTyping', {username: socket.username});
-        });
-    });
+  socket.on('new group message', function (roomName, data) {
+      var roomUsers = rooms[roomName];
+      roomUsers.forEach(function(entry) {
+          if(entry!=clients[socket.username]){
+              var dataToEmit = {roomName: roomName, username: socket.username, message: data};
+              io.to(entry).emit('groupMessage', dataToEmit);
+              io.to(entry).emit('groupMessageGlobal', dataToEmit);
+          }
+      });
+  });
 
-    socket.on('stop typing to group', function (roomName) {
-        var roomUsers = rooms[roomName];
-        roomUsers.forEach(function(entry) {
-            if (entry != clients[socket.username])
-                io.to(entry).emit('stopGroupTyping', {username: socket.username});
-        });
-    });
+  socket.on('typing to group', function (roomName) {
+      var roomUsers = rooms[roomName];
+      roomUsers.forEach(function(entry) {
+          if (entry != clients[socket.username])
+              io.to(entry).emit('groupTyping', {roomName: roomName, username: socket.username});
+      });
+  });
+
+  socket.on('stop typing to group', function (roomName) {
+      var roomUsers = rooms[roomName];
+      roomUsers.forEach(function(entry) {
+          if (entry != clients[socket.username])
+              io.to(entry).emit('stopGroupTyping', {roomName: roomName, username: socket.username});
+      });
+  });
 
 });
 
