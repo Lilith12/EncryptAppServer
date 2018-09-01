@@ -9,7 +9,19 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
-var http = require('http').Server(app);
+// var http = require('http').Server(app);
+var https        = require('https');
+var fs = require( 'fs' );
+var privateKey = fs.readFileSync('../EncryptAppServer/cert/privkey.pem').toString();
+var certificate = fs.readFileSync('../EncryptAppServer/cert/fullchain.pem').toString();
+
+var server = https.createServer({
+    key: privateKey,
+    cert: certificate,
+    requestCert: false,
+    rejectUnauthorized: false
+}, app);
+
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -19,7 +31,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-var io = require('socket.io')(http);
+var io = require('socket.io')(server);
 var clients = {};
 var clientsUsernames = [];
 var usersSocket = {};
@@ -170,7 +182,7 @@ io.on('connection', function (socket) {
 });
 
 
-http.listen(8085, function () {
+server.listen(8085, function () {
     console.log('8085');
 });
 
