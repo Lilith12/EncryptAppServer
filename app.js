@@ -9,7 +9,6 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
-// var http = require('http').Server(app);
 var https        = require('https');
 var fs = require( 'fs' );
 var privateKey = fs.readFileSync('../EncryptAppServer/cert/privkey.pem').toString();
@@ -46,7 +45,6 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
     console.log('user connected');
     socket.on('set username', function (username, publicKey) {
-        console.log(username);
         if (clients[username] === undefined) {
             socket.username = username;
             socket.publicKey = publicKey;
@@ -85,8 +83,6 @@ io.on('connection', function (socket) {
 
     socket.on('connect to room', function (roomName) {
         var roomUsers = rooms[roomName];
-        console.log(roomUsers);
-        console.log(roomUsers.indexOf(socket.id));
         let user = {user: socket.id, username: socket.username, key: socket.publicKey};
         if (roomUsers.find(roomUser => JSON.stringify(roomUser) === JSON.stringify(user)) === undefined) {
             rooms[roomName].push(user);
@@ -123,13 +119,14 @@ io.on('connection', function (socket) {
         io.to(clients[toClient]).emit('stop typing', {username: socket.username});
     });
 
-    socket.on('new message', function (toClient, data, wasEdited, position, messageCode) {
-        var dataToEmit = {
+    socket.on('new message', function (toClient, data, wasEdited, position, messageCode, isImage) {
+        let dataToEmit = {
             username: socket.username,
             message: data,
             wasEdited: wasEdited,
             position: position,
-            messageCode: messageCode
+            messageCode: messageCode,
+            isImage: isImage
         };
         io.to(clients[toClient]).emit('pwMessage', dataToEmit);
         io.to(clients[toClient]).emit('pwMessageGlobal', dataToEmit);
