@@ -12,14 +12,16 @@ var app = express();
 var https        = require('https');
 var fs = require( 'fs' );
 var privateKey = fs.readFileSync('../EncryptAppServer/cert/privkey.pem').toString();
-var certificate = fs.readFileSync('../EncryptAppServer/cert/fullchain.pem').toString();
+// var certificate = fs.readFileSync('../EncryptAppServer/cert/fullchain.pem').toString();
 
-var server = https.createServer({
+var server = https.createServer(
+    {
     key: privateKey,
     cert: certificate,
     requestCert: false,
     rejectUnauthorized: false
-}, app);
+},
+app);
 
 
 app.set('views', path.join(__dirname, 'views'));
@@ -102,8 +104,6 @@ io.on('connection', function (socket) {
             roomUsers.forEach(function (entry) {
                 io.to(entry.user).emit('user disconnected', {username: socket.username});
             });
-        } else {
-
         }
     });
 
@@ -132,8 +132,7 @@ io.on('connection', function (socket) {
         io.to(clients[toClient]).emit('pwMessageGlobal', dataToEmit);
     });
 
-    socket.on('new group message', function (toClient, roomName, data, wasEdited, position, messageCode) {
-        let roomUsers = rooms[roomName];
+    socket.on('new group message', function (toClient, roomName, data, wasEdited, position, messageCode, isImage) {
         console.log(roomName, data, wasEdited, position, messageCode);
             if (toClient !== socket.username) {
                 let dataToEmit = {
@@ -142,7 +141,8 @@ io.on('connection', function (socket) {
                     message: data,
                     wasEdited: wasEdited,
                     position: position,
-                    messageCode: messageCode
+                    messageCode: messageCode,
+                    isImage: isImage
                 };
                 io.to(clients[toClient]).emit('groupMessage', dataToEmit);
                 io.to(clients[toClient]).emit('groupMessageGlobal', dataToEmit);
